@@ -1,326 +1,44 @@
-# 단백질 서열 정렬 알고리즘 구현 README  
-(3.3, 4.1, 4.2, 4.3, 6.1 담당용)
+# 단백질 서열 정렬 알고리즘과 BLAST 프로젝트 개요
 
----
+이 폴더는 우리 팀이 맡은 단백질 서열 정렬 알고리즘과 BLAST 비교 파트를 준비하는 공간이다. 이 안에서 정렬 알고리즘을 직접 돌려 보고, 점수와 갭 설정을 바꿔가며 결과가 어떻게 달라지는지 확인한 뒤, 그 결과를 BLAST 정렬과 비교해서 보고서에 쓸 근거를 만든다.
 
-## 0. 이 폴더에서 하는 일 & 보고서 연결
+## 파일 구조
 
-이 디렉터리에서 나오는 결과로 채울 보고서 파트:
+처음에는 다음 구조를 기본으로 사용한다. 필요하면 나중에 파일을 더 추가하거나 이름을 바꿀 수 있다.
 
-- **3.3 정렬 알고리즘 구현**
-- **4.1 알고리즘별 정렬 결과**
-- **4.2 Gap penalty 변화에 따른 결과 비교**
-- **4.3 BLAST 결과와의 비교**
-- **6.1 정렬 알고리즘의 장점/한계**
+alignment  
+├ README.md  
+├ data  
+│ ├ example-pair.txt        단백질 서열 예시 한 쌍을 적어 두는 파일  
+│ └ blast-alignment.txt     BLAST 결과에서 정렬 부분을 그대로 붙여 두는 파일  
+├ src  
+│ ├ alignment.py            정렬 알고리즘 함수들을 모아 두는 코드 파일  
+│ ├ run-example.py          예시 서열 한 쌍을 정렬해서 결과를 확인하는 코드  
+│ ├ run-gap-penalty.py      갭 점수를 바꿔가며 정렬을 반복하는 코드  
+│ └ run-blast-compare.py    우리 정렬 결과와 BLAST 정렬을 한꺼번에 비교하는 코드  
+└ results  
+  ├ example-alignment.txt       예시 서열 정렬 결과를 저장하는 파일  
+  ├ gap-penalty-results.csv     갭 점수에 따른 결과를 표 형태로 저장하는 파일  
+  └ blast-comparison.txt        우리 정렬과 BLAST 정렬을 나란히 모아 둔 파일  
 
-이 README에 적힌 파일·코드만 만들고 실행하면,  
-위 5개 섹션에 들어갈 **정렬 결과/표/비교자료**가 다 나온다고 생각하면 됨.
+## 이 폴더에서 만들어야 하는 것
 
----
+이 폴더에서 최종적으로 만들고 싶은 것은 크게 세 가지이다.
 
-## 1. 폴더 구조
+첫째, 단백질 서열 예시 한 쌍에 대해 정렬 알고리즘을 실제로 돌린 결과이다. 여기에는 갭이 들어간 두 서열 문자열과 그때의 정렬 점수가 포함된다. 이 결과는 정렬 알고리즘을 직접 구현했다는 증거가 되고, 보고서의 정렬 알고리즘 구현과 알고리즘별 정렬 결과 부분에서 예시로 사용된다.
 
-alignment/
-├─ README.md                # 이 파일
-├─ data/
-│  ├─ example_pair.txt      # 예시 서열 1쌍
-│  ├─ example_pair2.txt     # (선택) 두 번째 서열 쌍
-│  └─ blast_alignment.txt   # BLAST 결과에서 복붙한 alignment 텍스트
-├─ src/
-│  ├─ alignment.py          # 정렬 알고리즘 함수 (Smith–Waterman 필수, NW 선택)
-│  ├─ run_example.py        # 예시 서열 정렬(3.3, 4.1용)
-│  ├─ run_gap_penalty.py    # gap penalty 실험(4.2용)
-│  └─ run_blast_compare.py  # BLAST 결과와 비교(4.3용)
-└─ results/
-   ├─ example_alignment.txt         # 예시 정렬 결과
-   ├─ gap_penalty_results.csv       # gap 설정별 결과 표
-   └─ blast_comparison.txt          # BLAST vs 우리 정렬 비교 결과
+둘째, 같은 서열 쌍에 대해 갭 점수를 여러 값으로 바꿔 가며 정렬을 다시 수행한 결과이다. 각 설정마다 정렬 점수, 갭의 개수, 서로 다른 아미노산이 맞춰진 개수를 세어서 정리할 예정이다. 이 숫자들은 갭 점수에 따라 정렬 모양이 어떻게 바뀌는지 비교하는 표로 정리해서 보고서에 넣기 위해 필요하다.
 
+셋째, BLAST에서 얻은 정렬과 우리 알고리즘으로 얻은 정렬을 나란히 볼 수 있는 자료이다. 같은 서열 쌍 또는 서로 대응되는 서열 쌍에 대해 BLAST 정렬 결과를 가져오고, 우리가 돌린 정렬 결과와 함께 한 파일에 모아 두면, 어디가 비슷하고 어디에서 차이가 나는지 보고서에서 설명할 수 있다. 이 비교를 바탕으로 정렬 알고리즘의 장점과 한계, 그리고 BLAST가 왜 휴리스틱 방식을 쓰는지에 대한 고찰을 정리할 수 있다.
 
----
+## 역할 나누기
 
-## 2. 준비물
+첫 번째 사람은 정렬 알고리즘을 직접 돌려 보는 역할을 맡는다. data 폴더의 예시 서열 파일에 사용할 단백질 서열 한 쌍을 고르고, src 폴더의 alignment 코드 파일 안에 정렬 알고리즘을 구현한 뒤, run-example 코드로 이 서열을 정렬해 본다. 이 사람이 만든 정렬 결과는 results 폴더의 example-alignment 파일에 저장되며, 보고서에서 정렬 알고리즘 구현과 알고리즘별 정렬 결과 부분의 핵심 예시가 된다.
 
-* Python 3.x (3.8 이상 권장)
-* 별도 라이브러리 필요 없음 (표는 CSV, 결과는 텍스트로만 저장)
+두 번째 사람은 실험과 BLAST 관련 작업을 맡는다. 첫 번째 사람이 정해 둔 서열 쌍과 점수 규칙을 그대로 사용하여 run-gap-penalty 코드로 갭 점수를 여러 값으로 바꿔 정렬을 반복하고, 각 설정에 대해 점수와 갭, 불일치 개수를 정리해서 gap-penalty-results 파일에 정리한다. 또 같은 서열을 BLAST 검색에 사용해 정렬 부분을 blast-alignment 파일에 붙여 두고, run-blast-compare 코드로 우리 정렬과 BLAST 정렬을 하나의 텍스트로 모아 results 폴더의 blast-comparison 파일을 만든다.
 
-공통 실행 예:
-cd alignment
-python src/run_example.py
+세 번째 사람은 보고서를 정리하고 고찰을 작성하는 역할을 맡는다. results 폴더에 모인 예시 정렬, 갭 점수 실험 결과, BLAST 비교 결과를 바탕으로, 보고서의 정렬 알고리즘 구현, 알고리즘별 정렬 결과, 갭 점수 비교, BLAST 비교, 그리고 정렬 알고리즘의 장점과 한계 부분을 문장과 표, 그림으로 정리한다. 이 사람은 코드보다는 설명과 흐름을 중심으로, 전체 이야기가 하나의 논리로 이어지도록 만드는 데 집중한다.
 
----
+## 작업 흐름 요약
 
-## 3. 데이터 파일 포맷 (`data/`)
-
-### 3.1 `example_pair.txt` (필수)
-
-예시 서열 1쌍을 **두 줄**로 저장:
-
-HEAGAWGHEE
-PAWHEAE
-
-* 1줄: `seq1`
-* 2줄: `seq2`
-  FASTA 형식 아니고, 그냥 plain text 두 줄.
-
-보고서에서 이 서열 쌍이
-3.3, 4.1, 4.2, 4.3 전체에 공통으로 쓰여도 됨.
-
-### 3.2 `example_pair2.txt` (선택)
-
-추가로 한 쌍 더 필요하면 위와 같은 포맷으로 저장.
-필수는 아님.
-
-### 3.3 `blast_alignment.txt` (필수)
-
-BLAST 웹 결과에서 **alignment 부분만** 복사해서 붙여넣기.
-
-예시(실제 내용은 BLAST 결과 그대로):
-
-
-Query  10  AAWGH-EE
-            || |  |
-Sbjct   5   AAWGHPEE
-
-
-이 파일은 나중에 `run_blast_compare.py`에서
-우리 정렬 결과와 같이 출력하는 용도.
-
----
-
-## 4. 코드 파일 역할 (`src/`)
-
-### 4.1 `alignment.py` – 정렬 알고리즘 함수 구현
-
-> 정렬 알고리즘 함수만 모아두는 파일.
-
-최소 이 함수 하나는 있어야 함:
-
-```python
-def smith_waterman(seq1: str, seq2: str,
-                   match: int,
-                   mismatch: int,
-                   gap: int):
-    """
-    입력:
-      seq1, seq2: 두 서열 문자열
-      match, mismatch, gap: 점수 설정
-    반환:
-      score_matrix: 2차원 리스트 또는 None (필요시)
-      aligned_seq1: gap('-') 포함 정렬 결과 문자열
-      aligned_seq2: gap('-') 포함 정렬 결과 문자열
-      max_score: 최종 점수 (int)
-    """
-    ...
-```
-
-(선택) 전역 정렬도 구현할 경우:
-
-```python
-def needleman_wunsch(seq1: str, seq2: str,
-                     match: int,
-                     mismatch: int,
-                     gap: int):
-    ...
-```
-
-* **필수:** `smith_waterman`
-* **선택:** `needleman_wunsch` (시간 없으면 안 만들어도 됨)
-
-이후 다른 스크립트들은 이 함수들을 import 해서 사용.
-
-#### 보고서에서 쓸 것 (3.3)
-
-* “우리가 구현한 정렬 함수 이름과 입력·출력 형식”
-* “match/mismatch/gap 점수 설정 값”
-* “Smith–Waterman를 사용했다는 점”
-  (필요하면 NW는 이론 설명만)
-
----
-
-### 4.2 `run_example.py` – 예시 정렬 실행 (3.3, 4.1용)
-
-> 예시 서열 1쌍에 대해 정렬 돌리고, 결과를 파일로 저장.
-
-해야 할 작업:
-
-1. `data/example_pair.txt` 읽어서 `seq1`, `seq2` 가져오기
-2. 기본 점수 설정으로 `smith_waterman` 호출
-
-   * 예: `match=2, mismatch=-1, gap=-2`
-3. (선택) `needleman_wunsch`도 호출
-4. 정렬 결과를 콘솔과 `results/example_alignment.txt`에 저장
-
-출력 예(파일 내용 예시):
-
-```text
-=== Smith-Waterman (Local) ===
-seq1: H-EAGAWGHEE
-seq2: HPE-AW-G-EE
-score: 10
-
-=== Needleman-Wunsch (Global, 선택) ===
-seq1: HEAGAWGHEE
-seq2: -HPEAWG-EE
-score: 7
-```
-
-#### 보고서에서 쓸 것
-
-* **3.3 정렬 알고리즘 구현**
-
-  * “어떤 서열 쌍에 대해 SW를 적용했는지” (example_pair 내용)
-  * “정렬 결과 예시(위와 같은 두 줄 alignment와 점수)”
-* **4.1 알고리즘별 정렬 결과**
-
-  * SW 정렬 결과 그림/텍스트
-  * (NW 구현했다면) NW 결과와 간단 비교
-    → “전역은 양 끝 gap, 국소는 motif 부분만 정렬” 같은 설명에 사용.
-
----
-
-### 4.3 `run_gap_penalty.py` – gap penalty 실험 (4.2용)
-
-> 같은 서열 쌍에 대해 gap penalty만 바꿔가며 정렬 실행.
-
-해야 할 작업:
-
-1. `data/example_pair.txt`에서 `seq1`, `seq2` 읽기
-2. 여러 gap 값에 대해 반복 (예: -1, -3, -5)
-3. 각 설정마다 `smith_waterman` 실행
-
-   * 최종 점수(`max_score`)
-   * alignment 안에서 gap 개수
-   * alignment 안에서 mismatch 개수
-     를 계산해서 리스트에 저장
-4. 결과를 `results/gap_penalty_results.csv`로 저장
-
-CSV 예시:
-
-```csv
-match,mismatch,gap,total_score,num_gaps,num_mismatches
-2,-1,-1,10,8,1
-2,-1,-3,6,4,4
-2,-1,-5,2,2,7
-```
-
-콘솔 출력 예:
-
-```text
-gap=-1 -> score=10, gaps=8, mismatches=1
-gap=-3 -> score=6, gaps=4, mismatches=4
-gap=-5 -> score=2, gaps=2, mismatches=7
-```
-
-#### 보고서에서 쓸 것 (4.2)
-
-* `gap_penalty_results.csv` 내용을 표로 옮기기
-
-  * 각 설정별 gap 개수/score/mismatch 개수
-* 관찰 문장:
-
-  * gap penalty가 커질수록 gap 수가 줄고 mismatch가 늘어나는 식의 패턴 정리
-
----
-
-### 4.4 `run_blast_compare.py` – BLAST와 비교 (4.3용)
-
-> 우리 SW 정렬 결과 vs BLAST alignment 텍스트를 한 파일에 정리.
-
-해야 할 작업:
-
-1. `data/example_pair.txt`에서 `seq1`, `seq2` 읽기
-2. `smith_waterman` 실행 (3.3에서 쓴 것과 같은 점수 설정 사용)
-3. `data/blast_alignment.txt` 읽어서 문자열로 보관
-4. `results/blast_comparison.txt`에 아래 형식으로 저장:
-
-```text
-=== Our Smith-Waterman Alignment ===
-seq1: H-EAGAWGHEE
-seq2: HPE-AW-G-EE
-score: 10
-
-=== BLAST Alignment (raw copy) ===
-(여기에 blast_alignment.txt 내용 그대로)
-
-=== Notes (간단 메모) ===
-- 보존된 구간 위치/길이 비교
-- gap 위치 차이 간단 메모
-- BLAST가 양 끝 일부를 잘라낸 경우 등
-```
-
-자동 분석까지는 필요 없고,
-**두 결과를 한 눈에 비교할 수 있게 정리**하는 게 목적.
-
-#### 보고서에서 쓸 것 (4.3)
-
-* `blast_comparison.txt`의 내용 기반으로:
-
-  * SW와 BLAST alignment의 공통점/차이점 몇 가지 정리
-
-    * 예: core motif는 거의 동일, 끝부분 처리/gap 배치 차이 등
-  * “BLAST는 seed 기반 휴리스틱이라 완전한 DP와 약간 다를 수 있다”는 설명에 활용
-
----
-
-## 5. 결과 폴더 (`results/`)와 보고서 섹션 연결
-
-최종적으로 보고서에서 참고해야 하는 파일:
-
-* **3.3 정렬 알고리즘 구현**
-
-  * `results/example_alignment.txt`
-  * * `src/alignment.py`의 함수 이름/입출력 설명 요약
-
-* **4.1 알고리즘별 정렬 결과**
-
-  * `results/example_alignment.txt`
-    (SW 정렬 결과, NW도 구현했다면 둘 다)
-
-* **4.2 Gap penalty 변화에 따른 결과 비교**
-
-  * `results/gap_penalty_results.csv`
-
-* **4.3 BLAST 결과와의 비교**
-
-  * `results/blast_comparison.txt`
-
-* **6.1 정렬 알고리즘의 장점/한계**
-
-  * 위 세 결과 파일을 보면서:
-
-    * DP 정렬의 특성 (최적 정렬, gap/mismatch 트레이드오프)
-    * gap penalty 영향
-    * SW와 BLAST 차이/계산량 관점 정리
-      → **추가 코드 없이 해석만 하면 됨**
-
----
-
-## 6. 실행 순서 요약 (팀원용)
-
-1. `alignment.py`
-
-   * `smith_waterman` 함수 구현 (필수)
-   * (시간 남으면 `needleman_wunsch`도 구현)
-
-2. `run_example.py` 실행
-
-   * `data/example_pair.txt` 읽어서 예시 정렬 수행
-   * `results/example_alignment.txt` 생성
-
-3. `run_gap_penalty.py` 실행
-
-   * gap penalty 여러 값으로 정렬
-   * `results/gap_penalty_results.csv` 생성
-
-4. BLAST 웹에서 검색 → alignment 부분 복사 → `data/blast_alignment.txt`에 저장
-
-5. `run_blast_compare.py` 실행
-
-   * `results/blast_comparison.txt` 생성
-
-여기까지 하면,
-3.3 / 4.1 / 4.2 / 4.3 / 6.1에 필요한 **정렬 결과 및 비교 데이터가 모두 준비된 상태**가 된다.
-
-```
-```
+처음에는 정렬에 사용할 단백질 서열 한 쌍과 기본 점수 규칙을 정하고, 그다음에 정렬 알고리즘을 실제로 한 번 돌려서 예시를 만든다. 이후에는 같은 서열 쌍에 대해 갭 점수만 바꾸어 실험을 반복하고, 별도로 BLAST 정렬 결과를 모아서 비교 자료를 만든다. 마지막으로 이 자료들을 정리하여 보고서의 각 섹션에 어떤 식으로 들어갈지 정리한다. 코드 구조나 세부 구현 방식은 이 리드미에서 강하게 고정하지 않고, 위에 적힌 파일 구조를 기본으로 두고 각 역할을 맡은 사람이 차근차근 채워 나가는 것을 목표로 한다.
