@@ -15,12 +15,12 @@
     run-example.py 에서 사용한 것과 같은 서열을 사용한다.
 
   둘, 갭 패널티 설정 목록 정하기
-    예를 들어 gapPenalty 값을 -1, -3, -5 와 같이 몇 가지 정해 둔다.
-    matchScore 와 mismatchScore 는 고정하고
-    gapPenalty 만 바꾸면서 실험한다.
+    예를 들어 갭 패널티 값을 마이너스 1, 마이너스 3, 마이너스 5 와 같이 몇 가지 정해 둔다.
+    일치 점수와 불일치 점수는 고정하고
+    갭 패널티만 바꾸면서 실험한다.
 
   셋, 정렬 반복 실행
-    설정한 각 gapPenalty 값에 대해
+    설정한 각 갭 패널티 값에 대해
     alignment 모듈의 smithWaterman 함수를 호출해 정렬을 수행한다.
     각 결과에서 전체 정렬 점수,
     갭 문자의 개수,
@@ -39,3 +39,77 @@
   갭 패널티가 커질수록 갭이 줄고 불일치가 늘어나는지 등
   정렬 모양의 변화를 설명할 때 근거로 사용된다.
 """
+
+import csv
+
+from alignment import smithWaterman
+
+
+def readExamplePair() -> tuple[str, str]:
+    path = "data/example-pair.txt"
+    with open(path, "r", encoding="utf-8") as handle:
+        lines = [line.strip() for line in handle.readlines() if line.strip()]
+    if len(lines) < 2:
+        raise ValueError("example-pair.txt 파일에는 두 줄의 서열이 필요합니다.")
+    return lines[0], lines[1]
+
+
+def countGapsAndMismatches(alignedOne: str, alignedTwo: str) -> tuple[int, int]:
+    if len(alignedOne) != len(alignedTwo):
+        raise ValueError("정렬된 두 서열의 길이가 다릅니다.")
+    gapCount = 0
+    mismatchCount = 0
+    for letterOne, letterTwo in zip(alignedOne, alignedTwo):
+        if letterOne == "-" or letterTwo == "-":
+            gapCount += 1
+        elif letterOne != letterTwo:
+            mismatchCount += 1
+    return gapCount, mismatchCount
+
+
+def main() -> None:
+    seqOne, seqTwo = readExamplePair()
+
+    matchScore = 2
+    mismatchScore = -1
+
+    gapList = [-1, -3, -5]
+
+    rows = []
+
+    for gapPenalty in gapList:
+        alignedOne, alignedTwo, score = smithWaterman(
+            seqOne,
+            seqTwo,
+            matchScore,
+            mismatchScore,
+            gapPenalty,
+        )
+        gapCount, mismatchCount = countGapsAndMismatches(alignedOne, alignedTwo)
+        rows.append(
+            {
+                "matchScore": matchScore,
+                "mismatchScore": mismatchScore,
+                "gapPenalty": gapPenalty,
+                "totalScore": score,
+                "gapCount": gapCount,
+                "mismatchCount": mismatchCount,
+            }
+        )
+
+    outPath = "results/gap-penalty-results.csv"
+    with open(outPath, "w", encoding="utf-8", newline="") as handle:
+        fieldNames = [
+            "matchScore",
+            "mismatchScore",
+            "gapPenalty",
+            "totalScore",
+            "gapCount",
+            "mismatchCount",
+        ]
+        writer = csv.DictWriter(handle, fieldnames=fieldNames)
+        writer.writeheader()
+        writer.writerows(rows)
+
+
+main()

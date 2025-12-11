@@ -16,10 +16,10 @@
 
   둘, 정렬 알고리즘 실행
     alignment 모듈의 smithWaterman 함수를
-    미리 정한 점수 규칙
-      예: matchScore = 2, mismatchScore = -1, gapPenalty = -2
+    기본 점수 규칙
+      예 matchScore 는 2, mismatchScore 는 마이너스 1, gapPenalty 는 마이너스 2
     로 한 번 호출해 정렬 결과를 얻는다.
-    전역 정렬까지 구현했으면 needlemanWunsch 함수도 같은 서열에 대해 실행해 볼 수 있다.
+    전역 정렬까지 구현했다면 needlemanWunsch 함수도 같은 서열에 대해 실행해 볼 수 있다.
 
   셋, 결과 출력과 저장
     얻은 정렬 결과 두 줄과 정렬 점수를
@@ -34,3 +34,51 @@
   알고리즘별 정렬 결과 부분에서
   실제로 어떻게 정렬이 되는지 보여 줄 때 사용한다.
 """
+
+from alignment import smithWaterman, needlemanWunsch
+
+
+def readExamplePair() -> tuple[str, str]:
+    """
+    data 폴더의 example-pair.txt 파일에서
+    단백질 서열 두 줄을 읽어 온다.
+    """
+    path = "data/example-pair.txt"
+    with open(path, "r", encoding="utf-8") as handle:
+        lines = [line.strip() for line in handle.readlines() if line.strip()]
+    if len(lines) < 2:
+        raise ValueError("example-pair.txt 파일에는 두 줄의 서열이 필요합니다.")
+    return lines[0], lines[1]
+
+
+def main() -> None:
+    seqOne, seqTwo = readExamplePair()
+
+    matchScore = 2
+    mismatchScore = -1
+    gapPenalty = -2
+
+    print("기본 점수 규칙으로 smithWaterman 정렬을 실행합니다.")
+    alignedOne, alignedTwo, score = smithWaterman(
+        seqOne,
+        seqTwo,
+        matchScore,
+        mismatchScore,
+        gapPenalty,
+    )
+
+    print()
+    print("정렬 결과 예시")
+    print("첫 번째 정렬 서열 ", alignedOne)
+    print("두 번째 정렬 서열 ", alignedTwo)
+    print("정렬 점수 ", score)
+
+    outPath = "results/example-alignment.txt"
+    with open(outPath, "w", encoding="utf-8") as handle:
+        handle.write("SmithWaterman 예시 정렬 결과\n")
+        handle.write("첫 번째 정렬 서열 " + alignedOne + "\n")
+        handle.write("두 번째 정렬 서열 " + alignedTwo + "\n")
+        handle.write("정렬 점수 " + str(score) + "\n")
+
+
+main()

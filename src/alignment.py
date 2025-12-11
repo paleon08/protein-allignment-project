@@ -33,7 +33,7 @@
       점수 표와 경로 복원 방식은 이 파일 안에서만 사용하고,
       다른 파일에서는 함수 이름과 입력과 출력만 알면 된다.
 
-  needlemanWunsch   (선택 사항)
+  needlemanWunsch   선택 사항
     목적
       필요하다면 전역 정렬 알고리즘도 함께 구현할 수 있다.
       입력과 출력 형식은 smithWaterman 와 동일하게 맞춘다.
@@ -43,3 +43,37 @@
   이 모듈에 정의된 함수들을 불러서 실제 서열 정렬 실험을 수행한다.
   따라서 이 파일이 정렬 알고리즘의 핵심 엔진 역할을 한다.
 """
+
+from typing import Tuple
+
+
+def smithWaterman(
+    seqOne: str,
+    seqTwo: str,
+    matchScore: int,
+    mismatchScore: int,
+    gapPenalty: int,
+) -> Tuple[str, str, int]:
+    """
+    smithWaterman 함수의 골격만 정의해 둔 상태이다.
+
+    나중에 이 안에 동적 계획법과 경로 복원 과정을 구현하면 된다.
+    지금은 프로젝트 구조를 잡기 위한 자리 표시자 역할만 한다.
+    """
+    raise NotImplementedError("정렬 알고리즘 구현이 필요합니다.")
+
+
+def needlemanWunsch(
+    seqOne: str,
+    seqTwo: str,
+    matchScore: int,
+    mismatchScore: int,
+    gapPenalty: int,
+) -> Tuple[str, str, int]:
+    """
+    needlemanWunsch 함수는 선택 사항이다.
+
+    전역 정렬이 필요할 경우에만 이 함수를 구현하면 된다.
+    입력과 출력 형식은 smithWaterman 와 같다.
+    """
+    raise NotImplementedError("전역 정렬 구현이 필요하면 이 함수를 완성하세요.")

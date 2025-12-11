@@ -41,3 +41,57 @@
   속도를 높이기 위해 어떤 타협을 하는지
   고찰 부분에서 이야기할 근거가 된다.
 """
+
+from alignment import smithWaterman
+
+
+def readExamplePair() -> tuple[str, str]:
+    path = "data/example-pair.txt"
+    with open(path, "r", encoding="utf-8") as handle:
+        lines = [line.strip() for line in handle.readlines() if line.strip()]
+    if len(lines) < 2:
+        raise ValueError("example-pair.txt 파일에는 두 줄의 서열이 필요합니다.")
+    return lines[0], lines[1]
+
+
+def readBlastAlignment() -> str:
+    path = "data/blast-alignment.txt"
+    with open(path, "r", encoding="utf-8") as handle:
+        text = handle.read()
+    return text.strip()
+
+
+def main() -> None:
+    seqOne, seqTwo = readExamplePair()
+
+    matchScore = 2
+    mismatchScore = -1
+    gapPenalty = -2
+
+    alignedOne, alignedTwo, score = smithWaterman(
+        seqOne,
+        seqTwo,
+        matchScore,
+        mismatchScore,
+        gapPenalty,
+    )
+
+    blastText = readBlastAlignment()
+
+    outPath = "results/blast-comparison.txt"
+    with open(outPath, "w", encoding="utf-8") as handle:
+        handle.write("우리 알고리즘 정렬 결과\n")
+        handle.write("첫 번째 정렬 서열 " + alignedOne + "\n")
+        handle.write("두 번째 정렬 서열 " + alignedTwo + "\n")
+        handle.write("정렬 점수 " + str(score) + "\n")
+        handle.write("\n")
+        handle.write("BLAST 정렬 결과 원문\n")
+        handle.write(blastText)
+        handle.write("\n")
+        handle.write("\n")
+        handle.write("비교 메모를 여기에 추가할 수 있습니다.\n")
+
+    print("blast-comparison.txt 파일을 확인해 정렬 차이를 비교할 수 있습니다.")
+
+
+main()
